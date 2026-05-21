@@ -1,5 +1,6 @@
 package com.kanade.backend.ai.rag.injector;
 
+import com.kanade.backend.ai.rag.prompt.RagPrompts;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.rag.content.Content;
@@ -13,35 +14,20 @@ import java.util.stream.IntStream;
 @Slf4j
 public class TemplateContentInjector implements ContentInjector {
 
-    private final String template;
+    private final String templateName;
 
     public TemplateContentInjector() {
-        this("""
-            你是一个智能助手，请根据以下参考资料回答问题。
-
-            参考资料：
-            --------
-            {contents}
-            --------
-
-            要求：
-            1. 基于参考资料回答，不要编造信息
-            2. 引用资料时标注来源编号，如 [1]、[2]
-            3. 如果参考资料不足以回答问题，请如实告知
-            4. 回答要清晰、准确、有条理
-
-            问题：{question}
-            """);
+        this("standard");
     }
 
-    public TemplateContentInjector(String template) {
-        this.template = template;
+    public TemplateContentInjector(String templateName) {
+        this.templateName = templateName;
     }
 
     @Override
     public ChatMessage inject(List<Content> contents, ChatMessage chatMessage) {
         if (contents == null || contents.isEmpty()) {
-            log.warn("⚠️ [内容注入] 无参考内容，返回原消息");
+            log.warn("无参考内容，返回原消息");
             return chatMessage;
         }
 
@@ -50,12 +36,11 @@ public class TemplateContentInjector implements ContentInjector {
             ? ((UserMessage) chatMessage).singleText()
             : chatMessage.toString();
 
-        String prompt = template
-            .replace("{contents}", formattedContents)
+        String template = RagPrompts.getContentInjectionTemplate(templateName);
+        String prompt = template.replace("{contents}", formattedContents)
             .replace("{question}", questionText);
 
-        log.info("💉 [内容注入] 注入了 {} 条参考内容", contents.size());
-
+        log.info("注入了 {} 条参考内容，使用模板: {}", contents.size(), templateName);
         return UserMessage.from(prompt);
     }
 

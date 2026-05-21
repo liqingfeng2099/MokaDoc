@@ -3,6 +3,7 @@ package com.kanade.backend.ai.memory;
 import com.kanade.backend.utils.GsonUtils;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,6 +127,12 @@ public class RedisMemoryStore {
             return;
         }
 
+        // SystemMessage 不需要持久化，它是静态配置，每次对话都会重新注入
+        if (message instanceof SystemMessage) {
+            log.debug("⏭️ [跳过SystemMessage] sessionId={}, reason=系统提示词无需持久化", sessionId);
+            return;
+        }
+
         String key = buildKey(sessionId);
         
         try {
@@ -177,6 +184,7 @@ public class RedisMemoryStore {
      * 序列化ChatMessage为JSON字符串
      *
      * 格式: {"type":"user","content":"你好"} 或 {"type":"ai","content":"你好！"}
+     * 注意：SystemMessage 不会调用此方法（已在 appendMessage 中过滤）
      */
     private String serializeMessage(ChatMessage message) {
         if (message instanceof UserMessage) {
@@ -184,6 +192,7 @@ public class RedisMemoryStore {
         } else if (message instanceof AiMessage) {
             return GsonUtils.toJson(new MessageWrapper("ai", ((AiMessage) message).text()));
         } else {
+            log.error("❌ [不支持的消息类型] class={}, 这不应该发生，请检查调用链", message.getClass().getName());
             throw new IllegalArgumentException("Unsupported message type: " + message.getClass());
         }
     }

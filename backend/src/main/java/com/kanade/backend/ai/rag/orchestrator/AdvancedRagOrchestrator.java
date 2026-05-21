@@ -7,6 +7,7 @@ import com.kanade.backend.ai.rag.injector.TemplateContentInjector;
 import com.kanade.backend.ai.rag.router.SmartQueryRouter;
 import com.kanade.backend.ai.rag.transformer.ChineseQueryCompressor;
 import com.kanade.backend.ai.rag.transformer.EntityBasedExpander;
+import com.kanade.backend.ai.rag.transformer.MultiStrategyQueryTransformer;
 import com.kanade.backend.graph.CypherTemplateEngine;
 import com.kanade.backend.graph.GraphContentRetriever;
 import com.kanade.backend.graph.GraphCrudService;
@@ -83,6 +84,8 @@ public class AdvancedRagOrchestrator {
     @Value("${rag.injection.template:standard}")
     private String injectionTemplate;
 
+    private final Map<String, String> queryTargetMap = new HashMap<>();
+
     // ====== 图谱 RAG 新增配置 ======
 
     @Value("${rag.graph.enabled:true}")
@@ -145,6 +148,10 @@ public class AdvancedRagOrchestrator {
                 log.info("🔧 [查询转换] 使用扩展器");
                 yield new EntityBasedExpander(3);
             }
+            case "multi_strategy" -> {
+                log.info("🔧 [查询转换] 使用多策略转换器");
+                yield new MultiStrategyQueryTransformer(chatModel, queryTargetMap);
+            }
             default -> {
                 log.warn("⚠️ [查询转换] 未知类型: {}，使用压缩器", transformationType);
                 yield new ChineseQueryCompressor(chatModel);
@@ -175,11 +182,12 @@ public class AdvancedRagOrchestrator {
 
     private QueryRouter buildQueryRouter() {
         Map<String, ContentRetriever> retrieverMap = buildRetrieverMap();
-
         if (!routingEnabled) {
             log.info("🎯 [智能路由] 已禁用，使用默认路由（全部检索器）");
             return new DefaultQueryRouter(retrieverMap.values());
         }
+        log.info("🎯 [智能路由] 启用智能路由");
+        return new SmartQueryRouter(retrieverMap, queryTargetMap);
         log.info("🎯 [智能路由] 启用智能路由（含 GRAPH/HYBRID 意图）");
         return new SmartQueryRouter(chatModel, retrieverMap);
     }

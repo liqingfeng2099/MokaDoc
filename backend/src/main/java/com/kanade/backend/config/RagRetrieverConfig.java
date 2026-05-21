@@ -50,13 +50,17 @@ public class RagRetrieverConfig {
         return new ContentRetriever() {
             @Override
             public List<Content> retrieve(Query query) {
+                long startTime = System.currentTimeMillis();
+                String queryText = query.text();
+                log.info("🔍 [ES全文检索-开始] 关键词: '{}', 最大结果数: {}", queryText, maxResults);
+
                 try {
                     SearchResponse<Map> response = esClient.search(s -> s
                             .index(indexName)
                             .query(q -> q
                                     .match(m -> m
                                             .field("content")
-                                            .query(query.text())
+                                            .query(queryText)
                                     )
                             )
                             .size(maxResults),
@@ -72,10 +76,20 @@ public class RagRetrieverConfig {
                             })
                             .collect(Collectors.toList());
 
-                    log.debug("🔍 [ES全文检索] query='{}', results={}", query.text(), contents.size());
+                    long duration = System.currentTimeMillis() - startTime;
+                    log.info("✅ [ES全文检索-完成] 耗时: {}ms, 命中: {} 条", duration, contents.size());
+                    
+                    // 打印前3条结果的摘要，方便调试
+                    if (!contents.isEmpty()) {
+                        contents.stream().limit(3).forEach(c -> 
+                            log.info("   📄 匹配片段: {}", c.textSegment().text().substring(0, Math.min(50, c.textSegment().text().length())))
+                        );
+                    }
+
                     return contents;
                 } catch (IOException e) {
-                    log.error("❌ [ES全文检索失败]", e);
+                    long duration = System.currentTimeMillis() - startTime;
+                    log.error("❌ [ES全文检索-失败] 耗时: {}ms, 错误: {}", duration, e.getMessage(), e);
                     return Collections.emptyList();
                 }
             }

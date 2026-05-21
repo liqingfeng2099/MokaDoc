@@ -119,6 +119,7 @@ public class DocumentRagService {
             dev.langchain4j.data.document.Document doc =
                     dev.langchain4j.data.document.loader.FileSystemDocumentLoader.loadDocument(filePath);
 
+            // 写入es content & vector
             EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
                     .embeddingModel(embeddingModel)
                     .embeddingStore(embeddingStore)

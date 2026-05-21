@@ -82,7 +82,7 @@ elasticsearch:
 rag:
   query-transformation:
     enabled: true
-    type: compress          # compress | expand
+    type: multi_strategy          # compress | expand | multi_strategy
   routing:
     enabled: true
   reranking:

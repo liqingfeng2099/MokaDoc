@@ -1,6 +1,6 @@
 -- 创建数据库
-CREATE DATABASE IF NOT EXISTS knowledge_base_system DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE knowledge_base_system;
+CREATE DATABASE IF NOT EXISTS mokaDoc DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE mokaDoc;
 
 -- 1. 用户表
 CREATE TABLE `sys_user` (

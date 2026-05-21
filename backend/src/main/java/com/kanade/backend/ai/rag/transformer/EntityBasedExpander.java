@@ -71,8 +71,16 @@ public class EntityBasedExpander implements QueryTransformer {
                 .map(Query::from)
                 .collect(Collectors.toList());
 
-            log.info("🔧 [查询扩展] 原始: '{}' → 扩展为 {} 个查询",
-                originalQuery, result.size());
+            // 详细记录扩展结果
+            StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("🔧 [查询扩展] 转换详情:\n");
+            logBuilder.append("  原始查询: ").append(originalQuery).append("\n");
+            logBuilder.append("  扩展为 ").append(result.size()).append(" 个查询:\n");
+            for (int i = 0; i < result.size(); i++) {
+                logBuilder.append("    [").append(i + 1).append("] ").append(result.get(i).text()).append("\n");
+            }
+            log.info(logBuilder.toString());
+            
             return result;
         } catch (Exception e) {
             log.error("❌ [查询扩展失败] 降级返回原查询", e);

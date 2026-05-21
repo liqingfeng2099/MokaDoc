@@ -24,7 +24,7 @@ public class ReciprocalRankFusionAggregator implements ContentAggregator {
         if (queryToContents.isEmpty()) {
             return Collections.emptyList();
         }
-
+        log.info("Collection<List<Content>>: {}",queryToContents);
         long startTime = System.currentTimeMillis();
 
         Map<String, Content> contentMap = new LinkedHashMap<>();
