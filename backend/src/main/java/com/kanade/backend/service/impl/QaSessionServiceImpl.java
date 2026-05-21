@@ -141,8 +141,8 @@ public class QaSessionServiceImpl extends ServiceImpl<QaSessionMapper, QaSession
             // 确保文档已索引到 ES（副作用：写入 ES）
             documentRagService.getContentRetriever(sessionId, documentIds, session.getUserId());
 
-            aiService = aiServiceFactory.createAdvancedRagChatAssistant();
-            log.info("🚀 [进阶RAG模式] sessionId={}, documents={}", sessionId, documentIds);
+            aiService = aiServiceFactory.createAdvancedRagChatAssistant(session.getUserId());
+            log.info("🚀 [进阶RAG模式] sessionId={}, userId={}, documents={}", sessionId, session.getUserId(), documentIds);
         } else {
             aiService = aiServiceFactory.getChatAssistant();
         }

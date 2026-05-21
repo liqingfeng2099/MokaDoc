@@ -193,4 +193,32 @@ declare namespace API {
     updateTime?: string
     password?: string
   }
+
+  // ========== 图谱模块类型 ==========
+
+  type GraphTask = {
+    id?: number
+    userId?: number
+    status?: string       // PENDING | PROCESSING | COMPLETED | FAILED
+    documentIds?: string
+    progress?: number
+    totalBatches?: number
+    completedBatches?: number
+    errorMessage?: string
+    createTime?: string
+    updateTime?: string
+  }
+
+  type GraphEntity = {
+    entityId?: string
+    name?: string
+    type?: string
+    neo4jId?: number
+    sourceDocIds?: string
+  }
+
+  type GraphStats = {
+    nodeCount?: number
+    relCount?: number
+  }
 }

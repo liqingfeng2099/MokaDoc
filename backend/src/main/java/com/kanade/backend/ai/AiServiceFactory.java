@@ -121,10 +121,24 @@ public class AiServiceFactory {
     }
 
     /**
-     * 创建进阶 RAG 聊天助手（使用 DefaultRetrievalAugmentor 管道）
+     * 创建进阶 RAG 聊天助手（使用 DefaultRetrievalAugmentor 管道，含图谱 RAG）。
+     *
+     * @param userId 当前用户 ID（用于图谱检索的 userId 隔离）
+     */
+    public AiChatService createAdvancedRagChatAssistant(Long userId) {
+        log.info("🚀 [创建进阶RAG助手] 已配置 RetrievalAugmentor（含图谱）, userId={}", userId);
+        return AiServices.builder(AiChatService.class)
+                .streamingChatModel(openAiStreamingChatModel)
+                .chatMemoryProvider(chatMemoryProvider)
+                .retrievalAugmentor(advancedRagOrchestrator.createAdvancedRagAugmentor(userId))
+                .build();
+    }
+
+    /**
+     * 创建进阶 RAG 聊天助手（无图谱模式，兼容旧调用）。
      */
     public AiChatService createAdvancedRagChatAssistant() {
-        log.info("🚀 [创建进阶RAG助手] 已配置 RetrievalAugmentor");
+        log.info("🚀 [创建进阶RAG助手] 已配置 RetrievalAugmentor（无图谱）");
         return AiServices.builder(AiChatService.class)
                 .streamingChatModel(openAiStreamingChatModel)
                 .chatMemoryProvider(chatMemoryProvider)
